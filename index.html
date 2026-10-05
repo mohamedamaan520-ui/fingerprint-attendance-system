@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fingerprint Attendance System</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#64748b;--primary:#2563eb;--border:#e2e8f0;--good:#16a34a;--bad:#dc2626}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Segoe UI,Arial;background:var(--bg);color:var(--text)}
+header{background:#0f172a;color:white;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+header h1{margin:0;font-size:22px}header small{color:#cbd5e1}
+main{max-width:1200px;margin:24px auto;padding:0 16px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 5px 18px #00000008}
+.stat{font-size:30px;font-weight:800;margin-top:8px}.muted{color:var(--muted);font-size:13px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}.tabs button,button{border:0;border-radius:10px;padding:11px 15px;cursor:pointer;font-weight:650;background:#e2e8f0;color:#172033}.tabs button.active,button.primary{background:var(--primary);color:white}
+section{display:none}.active-section{display:block}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}input,select{padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:white;min-width:180px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid var(--border);font-size:14px}th{color:var(--muted);font-size:12px;text-transform:uppercase}
+.badge{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:700}.present{background:#dcfce7;color:#166534}.late{background:#fef3c7;color:#92400e}.absent{background:#fee2e2;color:#991b1b}
+.notice{padding:14px;border-radius:12px;background:#eff6ff;color:#1e40af;margin-bottom:16px}
+@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:550px){.grid{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}table{min-width:700px}.card{overflow:auto}}
+</style>
+</head>
+<body>
+<header><div><h1>Fingerprint Attendance System</h1><small>Cloud-ready attendance management</small></div><div id="clock"></div></header>
+<main>
+<div class="notice">Fingerprint device integration is prepared for a later stage. For now you can manage employees and test attendance records manually.</div>
+<div class="grid">
+<div class="card"><div class="muted">Employees</div><div class="stat" id="employeeCount">0</div></div>
+<div class="card"><div class="muted">Present Today</div><div class="stat" id="presentCount">0</div></div>
+<div class="card"><div class="muted">Late Today</div><div class="stat" id="lateCount">0</div></div>
+<div class="card"><div class="muted">Devices</div><div class="stat" id="deviceCount">0</div></div>
+</div>
+<div class="tabs">
+<button class="active" data-tab="dashboard">Dashboard</button><button data-tab="employees">Employees</button><button data-tab="attendance">Attendance</button><button data-tab="devices">Devices / API</button><button data-tab="reports">Reports</button>
+</div>
+<section id="dashboard" class="active-section"><div class="card"><h2>Today’s Attendance</h2><div id="todayList"></div></div></section>
+<section id="employees"><div class="card"><h2>Employees</h2><div class="toolbar"><input id="empName" placeholder="Employee name"><input id="empId" placeholder="Employee ID"><input id="empDept" placeholder="Department"><button class="primary" onclick="addEmployee()">Add Employee</button></div><div id="employeeTable"></div></div></section>
+<section id="attendance"><div class="card"><h2>Attendance</h2><div class="toolbar"><select id="attEmployee"></select><select id="attStatus"><option>Present</option><option>Late</option><option>Absent</option></select><input id="attTime" type="time"><button class="primary" onclick="addAttendance()">Save Attendance</button></div><div id="attendanceTable"></div></div></section>
+<section id="devices"><div class="card"><h2>Fingerprint Devices / API</h2><div class="toolbar"><input id="devName" placeholder="Device name"><input id="devModel" placeholder="Model"><input id="devSerial" placeholder="Serial number"><input id="devIp" placeholder="IP address"><input id="devPort" placeholder="Port"><input id="devApi" placeholder="API URL"><button class="primary" onclick="addDevice()">Add Device</button></div><p class="muted">API key/token can be added later when the exact fingerprint machine model and API documentation are available.</p><div id="deviceTable"></div></div></section>
+<section id="reports"><div class="card"><h2>Reports</h2><div class="toolbar"><input id="reportDate" type="date"><button class="primary" onclick="exportCSV()">Export CSV</button></div><div id="reportTable"></div></div></section>
+</main>
+<script>
+const KEY="fingerprintAttendanceDemo";
+let data=JSON.parse(localStorage.getItem(KEY)||'{"employees":[],"attendance":[],"devices":[]}');
+const save=()=>{localStorage.setItem(KEY,JSON.stringify(data));render()};
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function today(){return new Date().toISOString().slice(0,10)}
+function render(){
+ employeeCount.textContent=data.employees.length;deviceCount.textContent=data.devices.length;
+ const td=data.attendance.filter(x=>x.date===today());presentCount.textContent=td.filter(x=>x.status==="Present").length;lateCount.textContent=td.filter(x=>x.status==="Late").length;
+ employeeTable.innerHTML='<table><tr><th>ID</th><th>Name</th><th>Department</th></tr>'+data.employees.map(e=>'<tr><td>'+esc(e.id)+'</td><td>'+esc(e.name)+'</td><td>'+esc(e.dept)+'</td></tr>').join('')+'</table>';
+ attEmployee.innerHTML=data.employees.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.name)+' ('+esc(e.id)+')</option>').join('')||'<option>No employees</option>';
+ attendanceTable.innerHTML='<table><tr><th>Date</th><th>Employee</th><th>Time</th><th>Status</th></tr>'+data.attendance.slice().reverse().map(a=>'<tr><td>'+a.date+'</td><td>'+esc(a.name)+'</td><td>'+esc(a.time)+'</td><td><span class="badge '+a.status.toLowerCase()+'">'+a.status+'</span></td></tr>').join('')+'</table>';
+ deviceTable.innerHTML='<table><tr><th>Name</th><th>Model</th><th>Serial</th><th>IP</th><th>Port</th><th>API</th></tr>'+data.devices.map(d=>'<tr><td>'+esc(d.name)+'</td><td>'+esc(d.model)+'</td><td>'+esc(d.serial)+'</td><td>'+esc(d.ip)+'</td><td>'+esc(d.port)+'</td><td>'+esc(d.api)+'</td></tr>').join('')+'</table>';
+ const list=td.map(a=>'<tr><td>'+esc(a.name)+'</td><td>'+a.time+'</td><td>'+a.status+'</td></tr>').join('');
+ todayList.innerHTML='<table><tr><th>Employee</th><th>Time</th><th>Status</th></tr>'+list+'</table>';
+ renderReport();
+}
+function addEmployee(){if(!empName.value.trim()||!empId.value.trim())return alert("Enter employee name and ID.");data.employees.push({name:empName.value.trim(),id:empId.value.trim(),dept:empDept.value.trim()});empName.value=empId.value=empDept.value="";save()}
+function addAttendance(){const e=data.employees.find(x=>x.id===attEmployee.value);if(!e)return alert("Add an employee first.");data.attendance.push({date:today(),name:e.name,id:e.id,time:attTime.value||new Date().toTimeString().slice(0,5),status:attStatus.value});save()}
+function addDevice(){if(!devName.value.trim())return alert("Enter device name.");data.devices.push({name:devName.value.trim(),model:devModel.value.trim(),serial:devSerial.value.trim(),ip:devIp.value.trim(),port:devPort.value.trim(),api:devApi.value.trim()});document.querySelectorAll("#devices input").forEach(x=>x.value="");save()}
+function renderReport(){const d=reportDate.value||today();const rows=data.attendance.filter(x=>x.date===d);reportTable.innerHTML='<table><tr><th>Date</th><th>Employee</th><th>Time</th><th>Status</th></tr>'+rows.map(a=>'<tr><td>'+a.date+'</td><td>'+esc(a.name)+'</td><td>'+a.time+'</td><td>'+a.status+'</td></tr>').join('')+'</table>'}
+function exportCSV(){const d=reportDate.value||today(),rows=data.attendance.filter(x=>x.date===d);let csv="Date,Employee ID,Employee,Time,Status\n"+rows.map(x=>[x.date,x.id,x.name,x.time,x.status].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="attendance-"+d+".csv";a.click()}
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll("section").forEach(x=>x.classList.remove("active-section"));document.getElementById(b.dataset.tab).classList.add("active-section")});
+reportDate.value=today();reportDate.onchange=renderReport;
+setInterval(()=>clock.textContent=new Date().toLocaleString(),1000);render();
+</script>
+</body></html>
