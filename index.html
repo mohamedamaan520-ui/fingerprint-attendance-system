@@ -1,5 +1,12 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fingerprint Attendance System</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>
-:root{--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#64748b;--primary:#2563eb;--border:#e2e8f0;--good:#16a34a;--dark:#0f172a}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fingerprint Attendance System</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#64748b;--primary:#2563eb;--border:#e2e8f0;--good:#16a34a;--danger:#dc2626;--dark:#0f172a}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text)}
 header{background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px}
 header h1{margin:0;font-size:22px}header small{color:#cbd5e1}.user{display:flex;align-items:center;gap:12px}
@@ -8,90 +15,179 @@ main{max-width:1280px;margin:24px auto;padding:0 16px}.grid{display:grid;grid-te
 .stat{font-size:30px;font-weight:800;margin-top:8px}.muted{color:var(--muted);font-size:13px}
 .tabs,.subtabs,.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
 button{border:0;border-radius:10px;padding:11px 15px;cursor:pointer;font-weight:650;background:#e2e8f0;color:#172033}
-.tabs button.active,.subtabs button.active,button.primary{background:var(--primary);color:white}
+button:hover{filter:brightness(.97)}.tabs button.active,.subtabs button.active,button.primary{background:var(--primary);color:white}
+button.test{background:#7c3aed;color:white}.danger{background:#fee2e2;color:#991b1b}
 section{display:none}.active-section{display:block}input,select{padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:white;min-width:170px}
 table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid var(--border);font-size:14px}th{color:var(--muted);font-size:12px;text-transform:uppercase}
 .badge{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:700}.online{background:#dcfce7;color:#166534}.offline{background:#fee2e2;color:#991b1b}
 .present{background:#dcfce7;color:#166534}.late{background:#fef3c7;color:#92400e}.absent{background:#fee2e2;color:#991b1b}
-.notice{padding:14px;border-radius:12px;background:#eff6ff;color:#1e40af;margin-bottom:16px}
-.device-list{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.device-card{border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;background:#fff}.device-card:hover{box-shadow:0 8px 25px #0002;transform:translateY(-1px)}.device-top{display:flex;justify-content:space-between;gap:10px}.device-name{font-size:18px;font-weight:800}.serial{color:var(--muted);font-size:12px;margin-top:5px}
-.detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;border-bottom:1px solid var(--border);padding-bottom:16px}.crumb{font-size:13px;color:var(--muted);margin-bottom:10px}.detail-title{font-size:26px;font-weight:850}.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}.param{border:1px solid var(--border);border-radius:12px;padding:14px}.param label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}.param b{font-size:15px}.danger{background:#fee2e2;color:#991b1b}.hidden{display:none!important}
-.auth{max-width:430px;margin:70px auto}.auth input{width:100%;margin:7px 0}.logout{background:#334155;color:white}
+.notice{padding:14px;border-radius:12px;background:#eff6ff;color:#1e40af;margin-bottom:16px}.testnotice{background:#f5f3ff;color:#5b21b6}
+.device-list{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.device-card{border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;background:#fff}
+.device-card:hover{box-shadow:0 8px 25px #0002;transform:translateY(-1px)}.device-top{display:flex;justify-content:space-between;gap:10px}.device-name{font-size:18px;font-weight:800}.serial{color:var(--muted);font-size:12px;margin-top:5px}
+.detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;border-bottom:1px solid var(--border);padding-bottom:16px}.crumb{font-size:13px;color:var(--muted);margin-bottom:10px}.detail-title{font-size:26px;font-weight:850}
+.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}.param{border:1px solid var(--border);border-radius:12px;padding:14px}.param label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}.param b{font-size:15px}
+.hidden{display:none!important}.auth{max-width:430px;margin:70px auto}.auth input{width:100%;margin:7px 0}.logout{background:#334155;color:white}
+.toast{position:fixed;right:20px;bottom:20px;background:#0f172a;color:#fff;padding:14px 18px;border-radius:12px;box-shadow:0 8px 30px #0003;z-index:20}
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.device-list,.detail-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.grid,.device-list,.detail-grid{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}table{min-width:700px}.card{overflow:auto}.detail-head{flex-direction:column}}
-</style></head><body>
-<div id="authView" class="auth card"><h2>Fingerprint Attendance System</h2><p class="muted">Sign in to access cloud attendance data.</p><input id="email" type="email" placeholder="Email"><input id="password" type="password" placeholder="Password"><div class="toolbar"><button class="primary" onclick="login()">Login</button><button onclick="signup()">Create Account</button></div><p id="authMsg" class="muted"></p></div>
+</style>
+</head>
+<body>
+<div id="authView" class="auth card">
+<h2>Fingerprint Attendance System</h2><p class="muted">Sign in to access cloud attendance data.</p>
+<input id="email" type="email" placeholder="Email"><input id="password" type="password" placeholder="Password">
+<div class="toolbar"><button class="primary" id="loginBtn">Login</button><button id="signupBtn">Create Account</button></div><p id="authMsg" class="muted"></p>
+</div>
+
 <div id="appView" class="hidden">
-<header><div><h1>Fingerprint Attendance System</h1><small>Device Center • Attendance • Supabase Cloud</small></div><div class="user"><span id="clock"></span><button class="logout" onclick="logout()">Logout</button></div></header>
+<header><div><h1>Fingerprint Attendance System</h1><small>Device Center • Attendance • Supabase Cloud</small></div><div class="user"><span id="clock"></span><button class="logout" id="logoutBtn">Logout</button></div></header>
 <main>
 <div class="notice">Device Center is connected to the cloud. ADMS receiver is ready for the fingerprint machine to push attendance records automatically.</div>
-<div class="grid"><div class="card"><div class="muted">Employees</div><div class="stat" id="employeeCount">0</div></div><div class="card"><div class="muted">Present Today</div><div class="stat" id="presentCount">0</div></div><div class="card"><div class="muted">Late Today</div><div class="stat" id="lateCount">0</div></div><div class="card"><div class="muted">Devices</div><div class="stat" id="deviceCount">0</div></div></div>
-<div class="tabs"><button class="active" data-tab="dashboard">Dashboard</button><button data-tab="employees">Employees</button><button data-tab="attendance">Attendance</button><button data-tab="deviceCenter">Device Center</button><button data-tab="reports">Reports</button></div>
+<div class="grid">
+<div class="card"><div class="muted">Employees</div><div class="stat" id="employeeCount">0</div></div>
+<div class="card"><div class="muted">Present Today</div><div class="stat" id="presentCount">0</div></div>
+<div class="card"><div class="muted">Late Today</div><div class="stat" id="lateCount">0</div></div>
+<div class="card"><div class="muted">Devices</div><div class="stat" id="deviceCount">0</div></div>
+</div>
+
+<div class="tabs">
+<button class="active" data-tab="dashboard">Dashboard</button><button data-tab="employees">Employees</button><button data-tab="attendance">Attendance</button><button data-tab="deviceCenter">Device Center</button><button data-tab="reports">Reports</button>
+</div>
 
 <section id="dashboard" class="active-section"><div class="card"><h2>Today's Attendance</h2><div id="todayList"></div></div></section>
-<section id="employees"><div class="card"><h2>Employees</h2><div class="toolbar"><input id="empName" placeholder="Employee name"><input id="empId" placeholder="Employee ID"><input id="empDept" placeholder="Department"><button class="primary" onclick="addEmployee()">Add Employee</button></div><div id="employeeTable"></div></div></section>
-<section id="attendance"><div class="card"><h2>Attendance</h2><div class="toolbar"><select id="attEmployee"></select><select id="attStatus"><option>Present</option><option>Late</option><option>Absent</option></select><input id="attTime" type="time"><button class="primary" onclick="addAttendance()">Save Attendance</button></div><div id="attendanceTable"></div></div></section>
+
+<section id="employees"><div class="card"><h2>Employees</h2>
+<div class="toolbar"><input id="empName" placeholder="Employee name"><input id="empId" placeholder="Employee ID"><input id="empDept" placeholder="Department"><input id="empFp" placeholder="Fingerprint ID / PIN"><button class="primary" id="addEmployeeBtn">Add Employee</button></div>
+<div id="employeeTable"></div></div></section>
+
+<section id="attendance"><div class="card"><h2>Attendance</h2>
+<div class="toolbar"><select id="attEmployee"></select><select id="attStatus"><option>Present</option><option>Late</option><option>Absent</option></select><input id="attTime" type="time"><button class="primary" id="saveAttendanceBtn">Save Attendance</button><button class="test" id="simulateBtn">🖐️ Test Fingerprint Punch</button></div>
+<div class="notice testnotice"><b>Fingerprint-less test simulator</b><br>Use this while the physical fingerprint machine is unavailable. It saves a real attendance row to Supabase with source <b>simulator</b>.</div>
+<div id="attendanceTable"></div></div></section>
 
 <section id="deviceCenter">
-<div id="deviceListView">
-<div class="card"><h2>Device Center</h2><div class="subtabs"><button class="active" onclick="deviceSub('devicesSub',this)">Device</button><button onclick="deviceSub('adminsSub',this)">Device Administrators</button><button onclick="deviceSub('sitesSub',this)">Site</button></div>
-<div id="devicesSub"><div class="toolbar"><input id="devName" placeholder="Device name"><input id="devModel" placeholder="Device type / model"><input id="devSerial" placeholder="Serial number"><input id="devIp" placeholder="IP address"><input id="devPort" type="number" placeholder="Port"><input id="devSite" placeholder="Site"><input id="devZone" placeholder="Zone"><button class="primary" onclick="addDevice()">Add Device</button></div><div id="deviceCards" class="device-list"></div></div>
-<div id="adminsSub" class="hidden"><h3>Device Administrators</h3><p class="muted">Administrator management is prepared for the device integration stage.</p><div class="param">Access control, administrator accounts and device permissions will be connected here.</div></div>
-<div id="sitesSub" class="hidden"><h3>Sites</h3><p class="muted">Sites and zones are currently stored on each device.</p><div id="siteTable"></div></div>
+<div id="deviceListView"><div class="card"><h2>Device Center</h2>
+<div class="subtabs"><button class="active" data-devtab="devicesSub">Device</button><button data-devtab="adminsSub">Device Administrators</button><button data-devtab="sitesSub">Site</button></div>
+<div id="devicesSub"><div class="toolbar"><input id="devName" placeholder="Device name"><input id="devModel" placeholder="Device type / model"><input id="devSerial" placeholder="Serial number"><input id="devIp" placeholder="IP address"><input id="devPort" type="number" placeholder="Port"><input id="devSite" placeholder="Site"><input id="devZone" placeholder="Zone"><button class="primary" id="addDeviceBtn">Add Device</button></div><div id="deviceCards" class="device-list"></div></div>
+<div id="adminsSub" class="hidden"><h3>Device Administrators</h3><p class="muted">Administrator management is prepared for the device integration stage.</p></div>
+<div id="sitesSub" class="hidden"><h3>Sites</h3><div id="siteTable"></div></div>
 </div></div>
 
-<div id="deviceDetailsView" class="hidden">
-<div class="card">
-<div class="crumb">Device Center &nbsp;/&nbsp; Device &nbsp;/&nbsp; Device Details</div>
-<div class="detail-head"><div><div class="detail-title" id="detailName">Device</div><div class="serial" id="detailSerial"></div></div><div><span id="detailStatus" class="badge offline">Offline</span></div></div>
-<div class="toolbar"><button onclick="backToDevices()">← Back to Devices</button><button class="primary" onclick="editCurrentDevice()">Edit Device</button><button onclick="syncCurrentDevice()">Sync Records to Attendance</button><button onclick="toggleRegistration()" id="registrationBtn">Set as Registration Device</button><button class="danger" onclick="deleteCurrentDevice()">Delete Device</button></div>
-<div class="subtabs"><button class="active" onclick="detailTab('paramsTab',this)">Device Parameters</button><button onclick="detailTab('settingsTab',this)">Device Settings</button><button onclick="detailTab('transactionsTab',this)">Transactions</button></div>
+<div id="deviceDetailsView" class="hidden"><div class="card">
+<div class="crumb">Device Center / Device / Device Details</div>
+<div class="detail-head"><div><div class="detail-title" id="detailName">Device</div><div class="serial" id="detailSerial"></div></div><span id="detailStatus" class="badge offline">Offline</span></div>
+<div class="toolbar"><button id="backDevicesBtn">← Back to Devices</button><button class="primary" id="editDeviceBtn">Edit Device</button><button id="syncDeviceBtn">Sync Records to Attendance</button><button id="registrationBtn">Set as Registration Device</button><button class="danger" id="deleteDeviceBtn">Delete Device</button></div>
+<div class="subtabs"><button class="active" data-detailtab="paramsTab">Device Parameters</button><button data-detailtab="settingsTab">Device Settings</button><button data-detailtab="transactionsTab">Transactions</button></div>
 <div id="paramsTab"><div id="paramGrid" class="detail-grid"></div></div>
-<div id="settingsTab" class="hidden"><h3>Device Settings</h3><div class="toolbar"><input id="editName" placeholder="Device Name"><input id="editType" placeholder="Device Type"><input id="editSite" placeholder="Site"><input id="editZone" placeholder="Zone"><input id="editFirmware" placeholder="Firmware Version"><input id="editIp" placeholder="IP Address"><input id="editMac" placeholder="MAC Address"><input id="editCapacity" type="number" placeholder="Device Capacity"><input id="editFpCapacity" type="number" placeholder="Fingerprint Template Capacity"><input id="editFaceCapacity" type="number" placeholder="Face Template Capacity"><input id="editUserCapacity" type="number" placeholder="User Capacity"><input id="editTransactionCapacity" type="number" placeholder="Transaction Capacity"><button class="primary" onclick="saveDeviceSettings()">Save Settings</button></div></div>
-<div class="notice" style="margin-top:16px"><b>ADMS Cloud Receiver</b><br><span>Server URL: <code>https://btcgmhjujcfhoafabteh.supabase.co/functions/v1/zkteco-adms</code></span><br><span class="muted">Device Cloud Server / ADMS: HTTPS, port 443. The device must use PUSH/ADMS mode.</span></div><div id="transactionsTab" class="hidden"><div id="deviceTransactions"></div></div>
+<div id="settingsTab" class="hidden"><h3>Device Settings</h3><div class="toolbar">
+<input id="editName" placeholder="Device Name"><input id="editType" placeholder="Device Type"><input id="editSite" placeholder="Site"><input id="editZone" placeholder="Zone"><input id="editFirmware" placeholder="Firmware Version"><input id="editIp" placeholder="IP Address"><input id="editMac" placeholder="MAC Address"><input id="editCapacity" type="number" placeholder="Device Capacity"><input id="editFpCapacity" type="number" placeholder="Fingerprint Template Capacity"><input id="editFaceCapacity" type="number" placeholder="Face Template Capacity"><input id="editUserCapacity" type="number" placeholder="User Capacity"><input id="editTransactionCapacity" type="number" placeholder="Transaction Capacity"><button class="primary" id="saveDeviceBtn">Save Settings</button>
+</div></div>
+<div class="notice" style="margin-top:16px"><b>ADMS Cloud Receiver</b><br>Server URL: <code>https://btcgmhjujcfhoafabteh.supabase.co/functions/v1/zkteco-adms</code><br><span class="muted">HTTPS • Port 443 • PUSH/ADMS mode</span></div>
+<div id="transactionsTab" class="hidden"><div id="deviceTransactions"></div></div>
 </div></div>
 </section>
 
-<section id="reports"><div class="card"><h2>Reports</h2><div class="toolbar"><input id="reportDate" type="date"><button class="primary" onclick="exportCSV()">Export CSV</button></div><div id="reportTable"></div></div></section>
+<section id="reports"><div class="card"><h2>Reports</h2><div class="toolbar"><input id="reportDate" type="date"><button class="primary" id="exportBtn">Export CSV</button></div><div id="reportTable"></div></div></section>
 </main></div>
+<div id="toast" class="toast hidden"></div>
+
 <script>
-const SUPABASE_URL="https://btcgmhjujcfhoafabteh.supabase.co",SUPABASE_KEY="sb_publishable_JtQN8btEI6-t-rHHe8pKmQ_B47yAjsU",sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const SUPABASE_URL="https://btcgmhjujcfhoafabteh.supabase.co";
+const SUPABASE_KEY="sb_publishable_JtQN8btEI6-t-rHHe8pKmQ_B47yAjsU";
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let employees=[],attendance=[],devices=[],currentDevice=null;
-const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])),today=()=>new Date().toLocaleDateString("en-CA");
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const today=()=>new Date().toLocaleDateString("en-CA");
+const toast=m=>{const t=$("toast");t.textContent=m;t.classList.remove("hidden");setTimeout(()=>t.classList.add("hidden"),2800)};
+const num=id=>{const v=$(id).value.trim();return v===""?null:Number(v)};
+
 async function login(){const{error}=await sb.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});$("authMsg").textContent=error?error.message:"";if(!error)showApp()}
 async function signup(){const{error}=await sb.auth.signUp({email:$("email").value.trim(),password:$("password").value});$("authMsg").textContent=error?error.message:"Account created. Check your email if confirmation is enabled."}
 async function logout(){await sb.auth.signOut();$("appView").classList.add("hidden");$("authView").classList.remove("hidden")}
-async function load(){let r=await sb.from("fingerprint_employees").select("*").order("created_at");if(r.error)throw r.error;employees=r.data||[];r=await sb.from("fingerprint_devices").select("*").order("created_at");if(r.error)throw r.error;devices=r.data||[];r=await sb.from("fingerprint_attendance").select("*,fingerprint_employees(full_name,employee_id)").order("created_at",{ascending:false});if(r.error)throw r.error;attendance=r.data||[];render()}
-async function addEmployee(){if(!$("empName").value.trim()||!$("empId").value.trim())return alert("Enter employee name and ID.");let{error}=await sb.from("fingerprint_employees").insert({full_name:$("empName").value.trim(),employee_id:$("empId").value.trim(),department:$("empDept").value.trim()});if(error)return alert(error.message);$("empName").value=$("empId").value=$("empDept").value="";load()}
-async function addAttendance(){const e=employees.find(x=>x.id===$("attEmployee").value);if(!e)return alert("Add an employee first.");const d=today(),t=$("attTime").value||new Date().toTimeString().slice(0,5);let{error}=await sb.from("fingerprint_attendance").insert({employee_id:e.id,attendance_date:d,check_in:new Date(d+"T"+t).toISOString(),status:$("attStatus").value,source:"manual"});if(error)return alert(error.message);load()}
-async function addDevice(){if(!$("devName").value.trim())return alert("Enter device name.");let{error}=await sb.from("fingerprint_devices").insert({device_name:$("devName").value.trim(),device_model:$("devModel").value.trim(),serial_number:$("devSerial").value.trim(),ip_address:$("devIp").value.trim(),port:$("devPort").value?Number($("devPort").value):null,site:$("devSite").value.trim(),zone:$("devZone").value.trim(),status:"online"});if(error)return alert(error.message);document.querySelectorAll("#devicesSub input").forEach(x=>x.value="");load()}
-function render(){const td=attendance.filter(x=>x.attendance_date===today());$("employeeCount").textContent=employees.length;$("deviceCount").textContent=devices.length;$("presentCount").textContent=td.filter(x=>x.status==="Present").length;$("lateCount").textContent=td.filter(x=>x.status==="Late").length;
-$("employeeTable").innerHTML="<table><tr><th>ID</th><th>Name</th><th>Department</th></tr>"+employees.map(e=>"<tr><td>"+esc(e.employee_id)+"</td><td>"+esc(e.full_name)+"</td><td>"+esc(e.department)+"</td></tr>").join("")+"</table>";
-$("attEmployee").innerHTML=employees.map(e=>"<option value='"+e.id+"'>"+esc(e.full_name)+" ("+esc(e.employee_id)+")</option>").join("")||"<option>No employees</option>";
-$("attendanceTable").innerHTML="<table><tr><th>Date</th><th>Employee</th><th>Time</th><th>Status</th></tr>"+attendance.map(a=>"<tr><td>"+a.attendance_date+"</td><td>"+esc(a.fingerprint_employees?.full_name||"")+"</td><td>"+(a.check_in?new Date(a.check_in).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"")+"</td><td><span class='badge "+a.status.toLowerCase()+"'>"+esc(a.status)+"</span></td></tr>").join("")+"</table>";
-$("todayList").innerHTML="<table><tr><th>Employee</th><th>Time</th><th>Status</th></tr>"+td.map(a=>"<tr><td>"+esc(a.fingerprint_employees?.full_name||"")+"</td><td>"+(a.check_in?new Date(a.check_in).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"")+"</td><td>"+esc(a.status)+"</td></tr>").join("")+"</table>";
-renderDevices();renderSites();renderReport()}
-function renderDevices(){$("deviceCards").innerHTML=devices.length?devices.map(d=>"<div class='device-card' onclick='openDevice(&quot;"+d.id+"&quot;)'><div class='device-top'><div><div class='device-name'>"+esc(d.device_name)+"</div><div class='serial'>"+esc(d.device_model||"Fingerprint")+" • "+esc(d.serial_number||"No serial")+"</div></div><span class='badge "+(d.status==="online"?"online":"offline")+"'>"+esc(d.status||"offline")+"</span></div><p class='muted'>Site: "+esc(d.site||"-")+"<br>Zone: "+esc(d.zone||"-")+"<br>IP: "+esc(d.ip_address||"-")+"</p></div>").join(""):"<div class='card'><p class='muted'>No devices added yet.</p></div>"}
-function renderSites(){const map={};devices.forEach(d=>{const s=d.site||"Unassigned";if(!map[s])map[s]=[];map[s].push(d)});$("siteTable").innerHTML="<table><tr><th>Site</th><th>Devices</th><th>Online</th></tr>"+Object.entries(map).map(([s,a])=>"<tr><td>"+esc(s)+"</td><td>"+a.length+"</td><td>"+a.filter(x=>x.status==="online").length+"</td></tr>").join("")+"</table>"}
+
+async function load(){
+let r=await sb.from("fingerprint_employees").select("*").order("created_at");if(r.error)throw r.error;employees=r.data||[];
+r=await sb.from("fingerprint_devices").select("*").order("created_at");if(r.error)throw r.error;devices=r.data||[];
+r=await sb.from("fingerprint_attendance").select("*,fingerprint_employees(full_name,employee_id)").order("created_at",{ascending:false});if(r.error)throw r.error;attendance=r.data||[];
+render()
+}
+
+async function addEmployee(){
+if(!$("empName").value.trim()||!$("empId").value.trim())return alert("Enter employee name and ID.");
+const p={full_name:$("empName").value.trim(),employee_id:$("empId").value.trim(),department:$("empDept").value.trim(),fingerprint_id:$("empFp").value.trim()||null};
+const{error}=await sb.from("fingerprint_employees").insert(p);if(error)return alert(error.message);
+["empName","empId","empDept","empFp"].forEach(id=>$(id).value="");await load();toast("Employee added.")
+}
+
+async function insertAttendance(source){
+const e=employees.find(x=>x.id===$("attEmployee").value);if(!e)return alert("Add/select an employee first.");
+const d=today(),t=$("attTime").value||new Date().toTimeString().slice(0,5);
+const device=devices.find(x=>x.status==="online")||devices[0]||null;
+const p={employee_id:e.id,attendance_date:d,check_in:new Date(d+"T"+t).toISOString(),status:$("attStatus").value,source};
+if(source==="simulator"){p.device_id=device?.id||null;p.remarks="Fingerprint-less test punch";}
+const{error}=await sb.from("fingerprint_attendance").insert(p);if(error)return alert(error.message);
+await load();toast(source==="simulator"?"Test fingerprint punch saved.":"Attendance saved.")
+}
+async function addAttendance(){await insertAttendance("manual")}
+async function simulatePunch(){await insertAttendance("simulator")}
+
+async function addDevice(){
+if(!$("devName").value.trim())return alert("Enter device name.");
+const p={device_name:$("devName").value.trim(),device_model:$("devModel").value.trim()||"PUSH / ADMS",serial_number:$("devSerial").value.trim()||null,ip_address:$("devIp").value.trim()||null,port:$("devPort").value?Number($("devPort").value):null,site:$("devSite").value.trim()||null,zone:$("devZone").value.trim()||null,status:"online"};
+const{error}=await sb.from("fingerprint_devices").insert(p);if(error)return alert(error.message);
+["devName","devModel","devSerial","devIp","devPort","devSite","devZone"].forEach(id=>$(id).value="");await load();toast("Device added.")
+}
+
+function render(){
+const td=attendance.filter(x=>x.attendance_date===today());
+$("employeeCount").textContent=employees.length;$("deviceCount").textContent=devices.length;$("presentCount").textContent=td.filter(x=>x.status==="Present").length;$("lateCount").textContent=td.filter(x=>x.status==="Late").length;
+$("employeeTable").innerHTML="<table><tr><th>ID</th><th>Name</th><th>Department</th><th>Fingerprint ID</th></tr>"+employees.map(e=>"<tr><td>"+esc(e.employee_id)+"</td><td>"+esc(e.full_name)+"</td><td>"+esc(e.department)+"</td><td>"+esc(e.fingerprint_id||"-")+"</td></tr>").join("")+"</table>";
+$("attEmployee").innerHTML=employees.map(e=>"<option value='"+esc(e.id)+"'>"+esc(e.full_name)+" ("+esc(e.employee_id)+")</option>").join("")||"<option value=''>No employees</option>";
+$("attendanceTable").innerHTML="<table><tr><th>Date</th><th>Employee</th><th>Time</th><th>Status</th><th>Source</th></tr>"+attendance.map(a=>"<tr><td>"+esc(a.attendance_date)+"</td><td>"+esc(a.fingerprint_employees?.full_name||"")+"</td><td>"+(a.check_in?new Date(a.check_in).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"")+"</td><td><span class='badge "+esc(String(a.status||"").toLowerCase())+"'>"+esc(a.status)+"</span></td><td>"+esc(a.source||"")+"</td></tr>").join("")+"</table>";
+$("todayList").innerHTML="<table><tr><th>Employee</th><th>Time</th><th>Status</th><th>Source</th></tr>"+td.map(a=>"<tr><td>"+esc(a.fingerprint_employees?.full_name||"")+"</td><td>"+(a.check_in?new Date(a.check_in).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"")+"</td><td>"+esc(a.status)+"</td><td>"+esc(a.source||"")+"</td></tr>").join("")+"</table>";
+renderDevices();renderSites();renderReport()
+}
+
+function renderDevices(){
+$("deviceCards").innerHTML=devices.length?devices.map(d=>"<div class='device-card' data-device-id='"+esc(d.id)+"'><div class='device-top'><div><div class='device-name'>"+esc(d.device_name)+"</div><div class='serial'>"+esc(d.device_model||"Fingerprint")+" • "+esc(d.serial_number||"No serial")+"</div></div><span class='badge "+(d.status==="online"?"online":"offline")+"'>"+esc(d.status||"offline")+"</span></div><p class='muted'>Site: "+esc(d.site||"-")+"<br>Zone: "+esc(d.zone||"-")+"<br>IP: "+esc(d.ip_address||"-")+"</p></div>").join(""):"<div class='card'><p class='muted'>No devices added yet.</p></div>";
+document.querySelectorAll(".device-card[data-device-id]").forEach(el=>el.onclick=()=>openDevice(el.dataset.deviceId))
+}
+function renderSites(){const map={};devices.forEach(d=>{const s=d.site||"Unassigned";(map[s]??=[]).push(d)});$("siteTable").innerHTML="<table><tr><th>Site</th><th>Devices</th><th>Online</th></tr>"+Object.entries(map).map(([s,a])=>"<tr><td>"+esc(s)+"</td><td>"+a.length+"</td><td>"+a.filter(x=>x.status==="online").length+"</td></tr>").join("")+"</table>"}
+
 function openDevice(id){currentDevice=devices.find(d=>d.id===id);if(!currentDevice)return;$("deviceListView").classList.add("hidden");$("deviceDetailsView").classList.remove("hidden");renderDeviceDetails()}
-function renderDeviceDetails(){const d=currentDevice;$("detailName").textContent=d.device_name||"Device";$("detailSerial").textContent=d.serial_number||"No serial number";$("detailStatus").textContent=d.status||"offline";$("detailStatus").className="badge "+(d.status==="online"?"online":"offline");$("registrationBtn").textContent=d.is_registration_device?"Registration Device ✓":"Set as Registration Device";
+function renderDeviceDetails(){
+const d=currentDevice;$("detailName").textContent=d.device_name||"Device";$("detailSerial").textContent=d.serial_number||"No serial number";$("detailStatus").textContent=d.status||"offline";$("detailStatus").className="badge "+(d.status==="online"?"online":"offline");$("registrationBtn").textContent=d.is_registration_device?"Registration Device ✓":"Set as Registration Device";
 const vals=[["Device Name",d.device_name],["Device Type",d.device_model],["Site",d.site],["Zone",d.zone],["Firmware Version",d.firmware_version],["IP Address",d.ip_address],["MAC Address",d.mac_address],["Device Capacity",d.device_capacity],["Fingerprint Template Capacity",d.fingerprint_template_capacity],["Face Template Capacity",d.face_template_capacity],["User Capacity",d.user_capacity],["Transaction Capacity",d.transaction_capacity]];
 $("paramGrid").innerHTML=vals.map(v=>"<div class='param'><label>"+v[0]+"</label><b>"+esc(v[1]??"-")+"</b></div>").join("");
-["editName","editType","editSite","editZone","editFirmware","editIp","editMac","editCapacity","editFpCapacity","editFaceCapacity","editUserCapacity","editTransactionCapacity"].forEach(id=>$(id).value="");
+const ids=["editName","editType","editSite","editZone","editFirmware","editIp","editMac","editCapacity","editFpCapacity","editFaceCapacity","editUserCapacity","editTransactionCapacity"];ids.forEach(id=>$(id).value="");
 $("editName").value=d.device_name||"";$("editType").value=d.device_model||"";$("editSite").value=d.site||"";$("editZone").value=d.zone||"";$("editFirmware").value=d.firmware_version||"";$("editIp").value=d.ip_address||"";$("editMac").value=d.mac_address||"";$("editCapacity").value=d.device_capacity??"";$("editFpCapacity").value=d.fingerprint_template_capacity??"";$("editFaceCapacity").value=d.face_template_capacity??"";$("editUserCapacity").value=d.user_capacity??"";$("editTransactionCapacity").value=d.transaction_capacity??"";
-const tx=attendance.filter(a=>a.device_id===d.id);$("deviceTransactions").innerHTML=tx.length?"<table><tr><th>Date</th><th>Employee</th><th>Time</th><th>Status</th><th>Source</th></tr>"+tx.map(a=>"<tr><td>"+a.attendance_date+"</td><td>"+esc(a.fingerprint_employees?.full_name||"")+"</td><td>"+(a.check_in?new Date(a.check_in).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"")+"</td><td>"+esc(a.status)+"</td><td>"+esc(a.source||"")+"</td></tr>").join("")+"</table>":"<p class='muted'>No transactions synced for this device yet.</p>"}
-async function saveDeviceSettings(){if(!currentDevice)return;const p={device_name:$("editName").value.trim(),device_model:$("editType").value.trim(),site:$("editSite").value.trim(),zone:$("editZone").value.trim(),firmware_version:$("editFirmware").value.trim(),ip_address:$("editIp").value.trim(),mac_address:$("editMac").value.trim(),device_capacity:num("editCapacity"),fingerprint_template_capacity:num("editFpCapacity"),face_template_capacity:num("editFaceCapacity"),user_capacity:num("editUserCapacity"),transaction_capacity:num("editTransactionCapacity")};const{error}=await sb.from("fingerprint_devices").update(p).eq("id",currentDevice.id);if(error)return alert(error.message);await load();currentDevice=devices.find(d=>d.id===currentDevice.id);renderDeviceDetails();alert("Device settings saved.")}
-function num(id){const v=$(id).value.trim();return v===""?null:Number(v)}
+const tx=attendance.filter(a=>a.device_id===d.id);$("deviceTransactions").innerHTML=tx.length?"<table><tr><th>Date</th><th>Employee</th><th>Time</th><th>Status</th><th>Source</th></tr>"+tx.map(a=>"<tr><td>"+esc(a.attendance_date)+"</td><td>"+esc(a.fingerprint_employees?.full_name||"")+"</td><td>"+(a.check_in?new Date(a.check_in).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"")+"</td><td>"+esc(a.status)+"</td><td>"+esc(a.source||"")+"</td></tr>").join("")+"</table>":"<p class='muted'>No transactions synced for this device yet.</p>"
+}
+
+async function saveDeviceSettings(){
+if(!currentDevice)return;
+const p={device_name:$("editName").value.trim(),device_model:$("editType").value.trim(),site:$("editSite").value.trim(),zone:$("editZone").value.trim(),firmware_version:$("editFirmware").value.trim(),ip_address:$("editIp").value.trim(),mac_address:$("editMac").value.trim(),device_capacity:num("editCapacity"),fingerprint_template_capacity:num("editFpCapacity"),face_template_capacity:num("editFaceCapacity"),user_capacity:num("editUserCapacity"),transaction_capacity:num("editTransactionCapacity")};
+const{error}=await sb.from("fingerprint_devices").update(p).eq("id",currentDevice.id);if(error)return alert(error.message);await load();currentDevice=devices.find(d=>d.id===currentDevice.id);renderDeviceDetails();toast("Device settings saved.")
+}
 async function toggleRegistration(){if(!currentDevice)return;const{error}=await sb.from("fingerprint_devices").update({is_registration_device:!currentDevice.is_registration_device}).eq("id",currentDevice.id);if(error)return alert(error.message);await load();currentDevice=devices.find(d=>d.id===currentDevice.id);renderDeviceDetails()}
 async function deleteCurrentDevice(){if(!currentDevice||!confirm("Delete this device?"))return;const{error}=await sb.from("fingerprint_devices").delete().eq("id",currentDevice.id);if(error)return alert(error.message);currentDevice=null;await load();backToDevices()}
-function editCurrentDevice(){detailTab("settingsTab",document.querySelectorAll("#deviceDetailsView .subtabs button")[1])}
-function syncCurrentDevice(){alert("ADMS cloud receiver is ready. Configure this device with the server URL shown in the Device Settings guide, then punches will be received automatically.");}
+function editCurrentDevice(){detailTab("settingsTab",document.querySelector("[data-detailtab='settingsTab']"))}
+function syncCurrentDevice(){alert("ADMS cloud receiver is ready. Configure the device with the Server URL shown above, HTTPS port 443, and PUSH/ADMS mode.")}
 function backToDevices(){$("deviceDetailsView").classList.add("hidden");$("deviceListView").classList.remove("hidden");renderDevices()}
-function deviceSub(id,btn){["devicesSub","adminsSub","sitesSub"].forEach(x=>$(x).classList.add("hidden"));$(id).classList.remove("hidden");document.querySelectorAll("#deviceCenter .subtabs button").forEach(x=>x.classList.remove("active"));btn.classList.add("active")}
-function detailTab(id,btn){["paramsTab","settingsTab","transactionsTab"].forEach(x=>$(x).classList.add("hidden"));$(id).classList.remove("hidden");document.querySelectorAll("#deviceDetailsView .subtabs button").forEach(x=>x.classList.remove("active"));btn.classList.add("active")}
-function renderReport(){const d=$("reportDate").value||today(),r=attendance.filter(x=>x.attendance_date===d);$("reportTable").innerHTML="<table><tr><th>Date</th><th>Employee</th><th>Time</th><th>Status</th></tr>"+r.map(a=>"<tr><td>"+a.attendance_date+"</td><td>"+esc(a.fingerprint_employees?.full_name||"")+"</td><td>"+(a.check_in?new Date(a.check_in).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"")+"</td><td>"+esc(a.status)+"</td></tr>").join("")+"</table>"}
-function exportCSV(){const d=$("reportDate").value||today(),r=attendance.filter(x=>x.attendance_date===d),csv="Date,Employee ID,Employee,Time,Status\n"+r.map(a=>[a.attendance_date,a.fingerprint_employees?.employee_id||"",a.fingerprint_employees?.full_name||"",a.check_in?new Date(a.check_in).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"",a.status].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n"),a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="attendance-"+d+".csv";a.click()}
+function deviceSub(id,btn){["devicesSub","adminsSub","sitesSub"].forEach(x=>$(x).classList.add("hidden"));$(id).classList.remove("hidden");document.querySelectorAll("[data-devtab]").forEach(x=>x.classList.remove("active"));btn.classList.add("active")}
+function detailTab(id,btn){["paramsTab","settingsTab","transactionsTab"].forEach(x=>$(x).classList.add("hidden"));$(id).classList.remove("hidden");document.querySelectorAll("[data-detailtab]").forEach(x=>x.classList.remove("active"));btn.classList.add("active")}
+function renderReport(){const d=$("reportDate").value||today(),r=attendance.filter(x=>x.attendance_date===d);$("reportTable").innerHTML="<table><tr><th>Date</th><th>Employee</th><th>Time</th><th>Status</th><th>Source</th></tr>"+r.map(a=>"<tr><td>"+esc(a.attendance_date)+"</td><td>"+esc(a.fingerprint_employees?.full_name||"")+"</td><td>"+(a.check_in?new Date(a.check_in).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"")+"</td><td>"+esc(a.status)+"</td><td>"+esc(a.source||"")+"</td></tr>").join("")+"</table>"}
+function exportCSV(){const d=$("reportDate").value||today(),r=attendance.filter(x=>x.attendance_date===d),csv="Date,Employee ID,Employee,Time,Status,Source\n"+r.map(a=>[a.attendance_date,a.fingerprint_employees?.employee_id||"",a.fingerprint_employees?.full_name||"",a.check_in?new Date(a.check_in).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"",a.status,a.source||""].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n"),a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="attendance-"+d+".csv";a.click()}
+
 function showApp(){$("authView").classList.add("hidden");$("appView").classList.remove("hidden");load().catch(e=>alert("Cloud database error: "+e.message))}
+$("loginBtn").onclick=login;$("signupBtn").onclick=signup;$("logoutBtn").onclick=logout;$("addEmployeeBtn").onclick=addEmployee;$("saveAttendanceBtn").onclick=addAttendance;$("simulateBtn").onclick=simulatePunch;$("addDeviceBtn").onclick=addDevice;$("backDevicesBtn").onclick=backToDevices;$("editDeviceBtn").onclick=editCurrentDevice;$("syncDeviceBtn").onclick=syncCurrentDevice;$("registrationBtn").onclick=toggleRegistration;$("deleteDeviceBtn").onclick=deleteCurrentDevice;$("saveDeviceBtn").onclick=saveDeviceSettings;$("exportBtn").onclick=exportCSV;
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll("section").forEach(x=>x.classList.remove("active-section"));$(b.dataset.tab).classList.add("active-section")});
-$("reportDate").value=today();$("reportDate").onchange=renderReport;setInterval(()=>$("clock").textContent=new Date().toLocaleString(),1000);sb.auth.getSession().then(({data})=>{if(data.session)showApp()});
-</script></body></html>
+document.querySelectorAll("[data-devtab]").forEach(b=>b.onclick=()=>deviceSub(b.dataset.devtab,b));
+document.querySelectorAll("[data-detailtab]").forEach(b=>b.onclick=()=>detailTab(b.dataset.detailtab,b));
+$("reportDate").value=today();$("reportDate").onchange=renderReport;
+setInterval(()=>$("clock").textContent=new Date().toLocaleString(),1000);
+sb.auth.getSession().then(({data})=>{if(data.session)showApp()});
+</script>
+</body>
+</html>
